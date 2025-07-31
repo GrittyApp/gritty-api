@@ -14,7 +14,7 @@ const http = require('http');
 const { URL } = require('url');
 
 // Configuration
-const BASE_URL = process.argv[2] || 'https://beta1-gritty-app.onrender.com/api/v1';
+const BASE_URL = process.argv[2] || 'https://gritty-staging.onrender.com/api/v1';
 const TEST_EMAIL = `test-${Date.now()}@grittytest.com`;
 const TEST_PASSWORD = 'TestPassword123!';
 

@@ -5,11 +5,11 @@
   "main": "automated-api-test.js",
   "scripts": {
     "test": "node automated-api-test.js",
-    "test:staging": "node automated-api-test.js https://beta1-gritty-app.onrender.com/api/v1",
+    "test:staging": "node automated-api-test.js https://gritty-staging.onrender.com/api/v1",
     "test:local": "node automated-api-test.js http://localhost:3000/api/v1",
     "test:production": "node automated-api-test.js https://api.grittyapp.com/api/v1",
     "postman:test": "newman run gritty-api-test-suite.postman_collection.json",
-    "postman:test:staging": "newman run gritty-api-test-suite.postman_collection.json --env-var base_url=https://beta1-gritty-app.onrender.com/api/v1"
+    "postman:test:staging": "newman run gritty-api-test-suite.postman_collection.json --env-var base_url=https://gritty-staging.onrender.com/api/v1"
   },
   "keywords": [
     "api",

@@ -7,6 +7,7 @@ This repository includes comprehensive testing tools for the Gritty App API, pro
 ## 🧪 Test Coverage
 
 ### Core Functionality
+
 - ✅ **Health Check** - API availability and basic response
 - ✅ **Authentication Flow** - Registration, login, logout, token validation
 - ✅ **User Management** - Profile operations and user statistics
@@ -16,6 +17,7 @@ This repository includes comprehensive testing tools for the Gritty App API, pro
 - ✅ **Performance** - Response time validation (< 5000ms)
 
 ### Test Types
+
 - **Functional Tests** - Core API functionality
 - **Integration Tests** - End-to-end workflows
 - **Error Handling Tests** - Invalid inputs and edge cases
@@ -28,7 +30,7 @@ This repository includes comprehensive testing tools for the Gritty App API, pro
 
 ```bash
 # Test against staging environment
-node automated-api-test.js https://beta1-gritty-app.onrender.com/api/v1
+node automated-api-test.js https://gritty-staging.onrender.com/api/v1
 
 # Test against local development
 node automated-api-test.js http://localhost:3000/api/v1
@@ -41,12 +43,14 @@ npm run test:local
 ### Option 2: Postman Collection
 
 1. **Import Collection**
+
    ```bash
    # Import the comprehensive test suite
    postman import gritty-api-test-suite.postman_collection.json
    ```
 
 2. **Set Environment Variables**
+
    - `base_url`: Your API base URL
    - `test_email`: Email for test user (auto-generated if not set)
    - `test_password`: Password for test user
@@ -63,7 +67,7 @@ npm install -g newman
 
 # Run against staging
 newman run gritty-api-test-suite.postman_collection.json \
-  --env-var base_url=https://beta1-gritty-app.onrender.com/api/v1 \
+  --env-var base_url=https://gritty-staging.onrender.com/api/v1 \
   --reporters cli,json \
   --reporter-json-export results.json
 
@@ -75,9 +79,10 @@ newman run gritty-api-test-suite.postman_collection.json \
 ## 📊 Test Results
 
 ### Node.js Script Output
+
 ```
 🚀 Starting Gritty App API Test Suite
-📍 Testing against: https://beta1-gritty-app.onrender.com/api/v1
+📍 Testing against: https://gritty-staging.onrender.com/api/v1
 📧 Test user email: test-1643723456789@grittytest.com
 ============================================================
 
@@ -116,6 +121,7 @@ newman run gritty-api-test-suite.postman_collection.json \
 ```
 
 ### Postman Collection Features
+
 - **Pre-request Scripts** - Automatic token management
 - **Test Scripts** - Comprehensive validation for each endpoint
 - **Environment Variables** - Dynamic test data generation
@@ -126,24 +132,26 @@ newman run gritty-api-test-suite.postman_collection.json \
 
 ### Environment Variables
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `base_url` | API base URL | `https://beta1-gritty-app.onrender.com/api/v1` |
-| `test_email` | Test user email | `test@example.com` (auto-generated if not set) |
-| `test_password` | Test user password | `TestPassword123!` |
+| Variable        | Description        | Example                                        |
+| --------------- | ------------------ | ---------------------------------------------- |
+| `base_url`      | API base URL       | `https://gritty-staging.onrender.com/api/v1`   |
+| `test_email`    | Test user email    | `test@example.com` (auto-generated if not set) |
+| `test_password` | Test user password | `TestPassword123!`                             |
 
 ### Test Configuration
 
 ```javascript
 // automated-api-test.js configuration
-const BASE_URL = process.argv[2] || 'https://beta1-gritty-app.onrender.com/api/v1';
+const BASE_URL =
+  process.argv[2] || "https://gritty-staging.onrender.com/api/v1";
 const TEST_EMAIL = `test-${Date.now()}@grittytest.com`;
-const TEST_PASSWORD = 'TestPassword123!';
+const TEST_PASSWORD = "TestPassword123!";
 ```
 
 ## 🎯 Test Scenarios
 
 ### 1. Complete User Journey
+
 1. **Health Check** - Verify API is accessible
 2. **User Registration** - Create new test user account
 3. **User Login** - Authenticate and receive JWT token
@@ -158,12 +166,14 @@ const TEST_PASSWORD = 'TestPassword123!';
 12. **Logout** - Clean session termination
 
 ### 2. Error Handling Scenarios
+
 - **404 Errors** - Non-existent resources
 - **401 Errors** - Missing or invalid authentication
 - **422 Errors** - Invalid request data
 - **Validation Errors** - Field validation failures
 
 ### 3. Performance Scenarios
+
 - **Response Time** - All requests under 5000ms
 - **Concurrent Users** - Multiple test users simultaneously
 - **Load Testing** - High volume request testing
@@ -173,36 +183,44 @@ const TEST_PASSWORD = 'TestPassword123!';
 ### Common Issues
 
 #### Authentication Failures
+
 ```bash
 ❌ User registration returns 201
 ```
+
 **Solution**: Check if email already exists, use unique test emails
 
 #### Network Timeouts
+
 ```bash
 ❌ Health check failed: ECONNREFUSED
 ```
+
 **Solution**: Verify the base URL is correct and API is running
 
 #### Token Expiration
+
 ```bash
 ❌ Get current user returns 200
 ```
+
 **Solution**: Ensure token is properly stored and passed in headers
 
 ### Debug Mode
 
 Enable verbose logging:
+
 ```javascript
 // Add to automated-api-test.js
-const DEBUG = process.env.DEBUG === 'true';
+const DEBUG = process.env.DEBUG === "true";
 if (DEBUG) {
-  console.log('Request:', method, path, data);
-  console.log('Response:', response);
+  console.log("Request:", method, path, data);
+  console.log("Response:", response);
 }
 ```
 
 Run with debug:
+
 ```bash
 DEBUG=true node automated-api-test.js
 ```
@@ -210,6 +228,7 @@ DEBUG=true node automated-api-test.js
 ## 📈 Continuous Integration
 
 ### GitHub Actions Example
+
 ```yaml
 name: API Tests
 on: [push, pull_request]
@@ -220,13 +239,14 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
-          node-version: '16'
+          node-version: "16"
       - run: npm install
       - run: npm run test:staging
       - run: npm run postman:test:staging
 ```
 
 ### Test Reporting
+
 - **Node.js Script**: Console output with summary statistics
 - **Newman**: JSON, HTML, and CLI reporters available
 - **Postman**: Built-in test result visualization
@@ -234,11 +254,13 @@ jobs:
 ## 🔄 Maintenance
 
 ### Updating Tests
+
 1. **Add New Endpoints**: Update both Node.js script and Postman collection
 2. **Modify Existing Tests**: Ensure backwards compatibility
 3. **Update Documentation**: Keep TESTING.md current with changes
 
 ### Test Data Management
+
 - **Unique Test Users**: Auto-generated emails prevent conflicts
 - **Cleanup**: Tests include logout and cleanup procedures
 - **Isolation**: Each test run uses fresh test data
@@ -246,6 +268,7 @@ jobs:
 ## 📞 Support
 
 For issues with the test suite:
+
 1. **Check Logs**: Review console output for specific error messages
 2. **Verify Environment**: Ensure correct base URL and credentials
 3. **Update Tests**: Pull latest version from repository

@@ -107,7 +107,7 @@
   "variable": [
     {
       "key": "base_url",
-      "value": "https://beta1-gritty-app.onrender.com/api/v1",
+      "value": "https://gritty-staging.onrender.com/api/v1",
       "type": "string",
       "description": "API base URL for staging environment"
     },
