@@ -1,0 +1,1129 @@
+openapi: 3.0.3
+info:
+  title: Gritty App Mobile API
+  description: |
+    Complete REST API for the Gritty App mobile application, providing mental fortitude training for young athletes (11-18).
+    
+    ## Authentication
+    The API uses JWT (JSON Web Token) authentication. Include the token in the Authorization header:
+    ```
+    Authorization: Bearer <your_jwt_token>
+    ```
+    
+    ## Response Format
+    All successful responses follow this format:
+    ```json
+    {
+      "success": true,
+      "message": "Success message",
+      "status": 200,
+      "data": { ... }
+    }
+    ```
+    
+    Error responses follow this format:
+    ```json
+    {
+      "error": "Error Type",
+      "message": "Error description",
+      "status": 400
+    }
+    ```
+  version: 1.1.0
+  contact:
+    name: Gritty App Development Team
+    email: dev@grittyapp.com
+  license:
+    name: Proprietary
+    url: https://grittyapp.com/license
+
+servers:
+  - url: https://api.grittyapp.com/api/v1
+    description: Production server
+  - url: https://staging-api.grittyapp.com/api/v1
+    description: Staging server
+  - url: http://localhost:3000/api/v1
+    description: Development server
+
+security:
+  - BearerAuth: []
+
+paths:
+  # Health Check
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check endpoint
+      description: Check API health status and service availability
+      security: []
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: API is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  # Authentication Endpoints
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      description: Authenticate user and receive JWT token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "user@example.com"
+                password:
+                  type: string
+                  format: password
+                  example: "password123"
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          token:
+                            type: string
+                            description: JWT authentication token
+                          user:
+                            $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: User registration
+      description: Register a new user account
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - password_confirmation
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "newuser@example.com"
+                password:
+                  type: string
+                  format: password
+                  example: "password123"
+                password_confirmation:
+                  type: string
+                  format: password
+                  example: "password123"
+      responses:
+        '201':
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          user:
+                            $ref: '#/components/schemas/User'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: User logout
+      description: Logout user (client-side token removal)
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /auth/me:
+    get:
+      tags:
+        - Authentication
+      summary: Get current user
+      description: Get current authenticated user information
+      responses:
+        '200':
+          description: User information retrieved
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          user:
+                            $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /auth/forgot_password:
+    post:
+      tags:
+        - Authentication
+      summary: Request password reset
+      description: Send password reset email to user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "user@example.com"
+      responses:
+        '200':
+          description: Password reset email sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /auth/reset_password:
+    post:
+      tags:
+        - Authentication
+      summary: Reset password
+      description: Reset user password with reset token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - reset_password_token
+                - password
+                - password_confirmation
+              properties:
+                reset_password_token:
+                  type: string
+                  example: "abc123def456"
+                password:
+                  type: string
+                  format: password
+                  example: "newpassword123"
+                password_confirmation:
+                  type: string
+                  format: password
+                  example: "newpassword123"
+      responses:
+        '200':
+          description: Password reset successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /auth/change_password:
+    patch:
+      tags:
+        - Authentication
+      summary: Change password
+      description: Change user password (requires current password)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - current_password
+                - password
+                - password_confirmation
+              properties:
+                current_password:
+                  type: string
+                  format: password
+                  example: "currentpassword"
+                password:
+                  type: string
+                  format: password
+                  example: "newpassword123"
+                password_confirmation:
+                  type: string
+                  format: password
+                  example: "newpassword123"
+      responses:
+        '200':
+          description: Password changed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /auth/account:
+    delete:
+      tags:
+        - Authentication
+      summary: Delete account
+      description: Delete user account permanently
+      responses:
+        '200':
+          description: Account deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  # User Endpoints
+  /users/{id}:
+    get:
+      tags:
+        - Users
+      summary: Get user by ID
+      description: Get user information by user ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: User ID
+      responses:
+        '200':
+          description: User information retrieved
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /users/{id}/profile:
+    get:
+      tags:
+        - Users
+      summary: Get user profile
+      description: Get detailed user profile information
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: User ID
+      responses:
+        '200':
+          description: Profile information retrieved
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Profile'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+    patch:
+      tags:
+        - Users
+      summary: Update user profile
+      description: Update user profile information
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: User ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileUpdate'
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Profile'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /users/{id}/stats:
+    get:
+      tags:
+        - Users
+      summary: Get user statistics
+      description: Get user training and assessment statistics
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: User ID
+      responses:
+        '200':
+          description: User statistics retrieved
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/UserStats'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+  /users/{id}/history:
+    get:
+      tags:
+        - Users
+      summary: Get user activity history
+      description: Get user training and assessment history
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: User ID
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Page number for pagination
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 25
+            maximum: 100
+          description: Number of items per page
+      responses:
+        '200':
+          description: User history retrieved
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          history:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/ActivityItem'
+                          pagination:
+                            $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+  # Training Endpoints
+  /trainings:
+    get:
+      tags:
+        - Trainings
+      summary: Get trainings list
+      description: Get list of available trainings with filtering and pagination
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [Foundation, Affirmation, Visualization, Meditation]
+          description: Filter by training type
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [foundation, affirmation, visualization, meditation]
+          description: Filter by training category (alias for type)
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search trainings by name
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Page number for pagination
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 25
+            maximum: 100
+          description: Number of items per page
+      responses:
+        '200':
+          description: Trainings list retrieved
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          trainings:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Training'
+                          pagination:
+                            $ref: '#/components/schemas/Pagination'
+                          filters:
+                            type: object
+                            properties:
+                              available_types:
+                                type: array
+                                items:
+                                  type: string
+                              current_type:
+                                type: string
+                              current_search:
+                                type: string
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /trainings/{id}:
+    get:
+      tags:
+        - Trainings
+      summary: Get training by ID
+      description: Get detailed training information including user progress
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Training ID
+      responses:
+        '200':
+          description: Training information retrieved
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          training:
+                            $ref: '#/components/schemas/Training'
+                          user_progress:
+                            $ref: '#/components/schemas/UserTraining'
+                          prerequisites_met:
+                            type: boolean
+                          recommended_next:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Training'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /trainings/{id}/start:
+    post:
+      tags:
+        - Trainings
+      summary: Start training
+      description: Start a training session for the user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Training ID
+      responses:
+        '201':
+          description: Training started successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          user_training:
+                            $ref: '#/components/schemas/UserTraining'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /trainings/{id}/complete:
+    post:
+      tags:
+        - Trainings
+      summary: Complete training
+      description: Mark a training as completed for the user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Training ID
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                score:
+                  type: integer
+                  minimum: 0
+                  maximum: 100
+                  description: Training completion score
+                notes:
+                  type: string
+                  description: Optional completion notes
+      responses:
+        '200':
+          description: Training completed successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          user_training:
+                            $ref: '#/components/schemas/UserTraining'
+                          points_earned:
+                            type: integer
+                          badges_earned:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Badge'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Success"
+        status:
+          type: integer
+          example: 200
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Error Type"
+        message:
+          type: string
+          example: "Error description"
+        status:
+          type: integer
+          example: 400
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+        version:
+          type: string
+          example: "1.0.0"
+        environment:
+          type: string
+          example: "production"
+        checks:
+          type: object
+          properties:
+            database:
+              $ref: '#/components/schemas/HealthCheck'
+            redis:
+              $ref: '#/components/schemas/HealthCheck'
+            storage:
+              $ref: '#/components/schemas/HealthCheck'
+            api_services:
+              $ref: '#/components/schemas/HealthCheck'
+
+    HealthCheck:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy, degraded]
+        message:
+          type: string
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        confirmed:
+          type: boolean
+          example: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Profile:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        full_name:
+          type: string
+        user_type:
+          type: string
+          enum: [Player, Coach, Parent]
+        sport_primary:
+          type: string
+        sport_secondary:
+          type: string
+        age:
+          type: integer
+        gender:
+          type: string
+        phone:
+          type: string
+        birthdate:
+          type: string
+          format: date
+        role:
+          type: string
+        visualization:
+          type: boolean
+        affirmation:
+          type: boolean
+        meditation:
+          type: boolean
+        foundation:
+          type: boolean
+        current:
+          type: integer
+        longest:
+          type: integer
+        total:
+          type: integer
+        assessment_focus:
+          type: integer
+        assessment_resilience:
+          type: integer
+        assessment_confidence:
+          type: integer
+        assessment_mindset:
+          type: integer
+
+    ProfileUpdate:
+      type: object
+      properties:
+        username:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        sport_primary:
+          type: string
+        sport_secondary:
+          type: string
+        age:
+          type: integer
+        gender:
+          type: string
+        phone:
+          type: string
+        birthdate:
+          type: string
+          format: date
+        visualization:
+          type: boolean
+        affirmation:
+          type: boolean
+        meditation:
+          type: boolean
+        foundation:
+          type: boolean
+
+    UserStats:
+      type: object
+      properties:
+        training_stats:
+          type: object
+          properties:
+            total_completed:
+              type: integer
+            current_streak:
+              type: integer
+            longest_streak:
+              type: integer
+            total_time_minutes:
+              type: integer
+            foundations_completed:
+              type: integer
+            affirmations_completed:
+              type: integer
+            visualizations_completed:
+              type: integer
+            meditations_completed:
+              type: integer
+        assessment_stats:
+          type: object
+          properties:
+            assessments_completed:
+              type: integer
+            latest_scores:
+              type: object
+              properties:
+                focus:
+                  type: integer
+                resilience:
+                  type: integer
+                confidence:
+                  type: integer
+                mindset:
+                  type: integer
+        achievement_stats:
+          type: object
+          properties:
+            total_points:
+              type: integer
+            weekly_points:
+              type: integer
+            badges_earned:
+              type: integer
+            level:
+              type: integer
+
+    ActivityItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum: [training, assessment, achievement]
+        title:
+          type: string
+        description:
+          type: string
+        points_earned:
+          type: integer
+        completed_at:
+          type: string
+          format: date-time
+
+    Training:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        training_type:
+          type: string
+          enum: [Foundation, Affirmation, Visualization, Meditation]
+        difficulty_level:
+          type: integer
+          minimum: 1
+          maximum: 5
+        estimated_duration_minutes:
+          type: integer
+        points_value:
+          type: integer
+        prerequisites:
+          type: array
+          items:
+            type: integer
+        tags:
+          type: array
+          items:
+            type: string
+        active:
+          type: boolean
+        has_video:
+          type: boolean
+        video_playlist:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    UserTraining:
+      type: object
+      properties:
+        id:
+          type: integer
+        training_id:
+          type: integer
+        status:
+          type: string
+          enum: [not_started, in_progress, completed]
+        progress_percentage:
+          type: integer
+          minimum: 0
+          maximum: 100
+        score:
+          type: integer
+        completed_at:
+          type: string
+          format: date-time
+        started_at:
+          type: string
+          format: date-time
+        notes:
+          type: string
+
+    Badge:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        level:
+          type: integer
+        earned_at:
+          type: string
+          format: date-time
+        image_url:
+          type: string
+
+    Pagination:
+      type: object
+      properties:
+        current_page:
+          type: integer
+        per_page:
+          type: integer
+        total_count:
+          type: integer
+        total_pages:
+          type: integer
+
+  responses:
+    UnauthorizedError:
+      description: Authentication required or invalid token
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/ErrorResponse'
+              - type: object
+                properties:
+                  error:
+                    example: "Unauthorized"
+                  status:
+                    example: 401
+
+    ForbiddenError:
+      description: Access denied
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/ErrorResponse'
+              - type: object
+                properties:
+                  error:
+                    example: "Forbidden"
+                  status:
+                    example: 403
+
+    NotFoundError:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/ErrorResponse'
+              - type: object
+                properties:
+                  error:
+                    example: "Not Found"
+                  status:
+                    example: 404
+
+    ValidationError:
+      description: Validation failed
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/ErrorResponse'
+              - type: object
+                properties:
+                  error:
+                    example: "Validation Error"
+                  status:
+                    example: 422
+
+tags:
+  - name: Health
+    description: API health and status endpoints
+  - name: Authentication
+    description: User authentication and account management
+  - name: Users
+    description: User profile management
+  - name: Trainings
+    description: Training content and progress
+  - name: Assessments
+    description: Mental fortitude assessments
+  - name: Achievements
+    description: Badges, points, and achievements
+  - name: Notifications
+    description: User notifications
+  - name: Teams
+    description: Team management and social features
+  - name: Rewards
+    description: Rewards and redemption system
