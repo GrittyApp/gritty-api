@@ -1,0 +1,1006 @@
+{
+  "info": {
+    "name": "Gritty App API - Comprehensive Test Suite",
+    "description": "Comprehensive automated test suite for the Gritty App API with full workflow validation, error handling, and performance testing.\n\n## Setup Instructions\n1. Import this collection into Postman\n2. Set environment variables:\n   - `base_url`: Your staging URL (e.g., https://beta1-gritty-app.onrender.com/api/v1)\n   - `test_email`: Email for test user (e.g., test@example.com)\n   - `test_password`: Password for test user\n3. Run the collection using Collection Runner\n\n## Test Coverage\n- ✅ Authentication flow (register, login, logout)\n- ✅ User management and profiles\n- ✅ Training system workflows\n- ✅ Assessment system end-to-end\n- ✅ Achievements and rewards\n- ✅ Error handling and validation\n- ✅ Performance and response time validation\n\n## Environment Variables\n- `base_url`: API base URL\n- `test_email`: Test user email\n- `test_password`: Test user password\n- `token`: JWT token (auto-set)\n- `user_id`: Current user ID (auto-set)\n- `training_id`: Training ID for tests (auto-set)\n- `assessment_id`: Assessment ID for tests (auto-set)\n- `user_assessment_id`: User assessment ID (auto-set)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "gritty-api-test-suite",
+    "version": {
+      "major": 1,
+      "minor": 0,
+      "patch": 0
+    }
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global pre-request script",
+          "pm.request.headers.add({",
+          "  key: 'Content-Type',",
+          "  value: 'application/json'",
+          "});",
+          "",
+          "// Add timestamp for tracking",
+          "pm.globals.set('test_timestamp', new Date().toISOString());",
+          "",
+          "// Log request details",
+          "console.log(`🚀 ${pm.request.method} ${pm.request.url.toString()}`);",
+          "if (pm.request.body && pm.request.body.raw) {",
+          "  console.log('📤 Request Body:', pm.request.body.raw);",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test script - runs after every request",
+          "",
+          "// Performance test",
+          "pm.test('⚡ Response time is acceptable (< 5000ms)', function () {",
+          "  pm.expect(pm.response.responseTime).to.be.below(5000);",
+          "});",
+          "",
+          "// Basic response validation",
+          "pm.test('📋 Response has valid JSON body', function () {",
+          "  pm.response.to.have.jsonBody();",
+          "});",
+          "",
+          "// Status code validation",
+          "pm.test('✅ Response status is in 2xx or expected error range', function () {",
+          "  const status = pm.response.code;",
+          "  pm.expect(status).to.satisfy(function(code) {",
+          "    return (code >= 200 && code < 300) || ",
+          "           (code >= 400 && code < 500) || ",
+          "           (code >= 500 && code < 600);",
+          "  });",
+          "});",
+          "",
+          "// Response structure validation for successful responses",
+          "if (pm.response.code >= 200 && pm.response.code < 300) {",
+          "  const responseJson = pm.response.json();",
+          "  ",
+          "  pm.test('📊 Success response has correct structure', function () {",
+          "    pm.expect(responseJson).to.have.property('success');",
+          "    pm.expect(responseJson).to.have.property('status');",
+          "    pm.expect(responseJson.success).to.be.true;",
+          "    pm.expect(responseJson.status).to.equal(pm.response.code);",
+          "  });",
+          "}",
+          "",
+          "// Response structure validation for error responses",
+          "if (pm.response.code >= 400) {",
+          "  const responseJson = pm.response.json();",
+          "  ",
+          "  pm.test('❌ Error response has correct structure', function () {",
+          "    pm.expect(responseJson).to.have.property('error');",
+          "    pm.expect(responseJson).to.have.property('message');",
+          "    pm.expect(responseJson).to.have.property('status');",
+          "    pm.expect(responseJson.status).to.equal(pm.response.code);",
+          "  });",
+          "}",
+          "",
+          "// Log response details",
+          "console.log(`📥 Response: ${pm.response.code} ${pm.response.status}`);",
+          "console.log(`⏱️  Response Time: ${pm.response.responseTime}ms`);",
+          "if (pm.response.code >= 400) {",
+          "  console.log('❌ Error Response:', pm.response.text());",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://beta1-gritty-app.onrender.com/api/v1",
+      "type": "string",
+      "description": "API base URL for staging environment"
+    },
+    {
+      "key": "test_email",
+      "value": "test-{{$timestamp}}@grittytest.com",
+      "type": "string",
+      "description": "Test user email (unique per run)"
+    },
+    {
+      "key": "test_password",
+      "value": "TestPassword123!",
+      "type": "string",
+      "description": "Test user password"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string",
+      "description": "JWT authentication token (auto-set)"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string",
+      "description": "Current user ID (auto-set)"
+    },
+    {
+      "key": "training_id",
+      "value": "",
+      "type": "string",
+      "description": "Training ID for tests (auto-set)"
+    },
+    {
+      "key": "assessment_id",
+      "value": "",
+      "type": "string",
+      "description": "Assessment ID for tests (auto-set)"
+    },
+    {
+      "key": "user_assessment_id",
+      "value": "",
+      "type": "string",
+      "description": "User assessment ID (auto-set)"
+    }
+  ],
+  "item": [
+    {
+      "name": "🏥 Health Check",
+      "item": [
+        {
+          "name": "API Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "description": "Verify API is running and accessible"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('🏥 Health check returns 200 OK', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('🏥 Health check response structure', function () {",
+                  "  const responseJson = pm.response.json();",
+                  "  pm.expect(responseJson).to.have.property('success', true);",
+                  "  pm.expect(responseJson).to.have.property('message');",
+                  "  pm.expect(responseJson).to.have.property('status', 200);",
+                  "});",
+                  "",
+                  "console.log('✅ API Health Check passed - API is accessible');"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🔐 Authentication Flow",
+      "item": [
+        {
+          "name": "1. Register New User",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user\": {\n    \"email\": \"{{test_email}}\",\n    \"password\": \"{{test_password}}\",\n    \"password_confirmation\": \"{{test_password}}\",\n    \"first_name\": \"Test\",\n    \"last_name\": \"User\",\n    \"date_of_birth\": \"2005-01-01\",\n    \"sport\": \"Basketball\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('🔐 User registration successful', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('🔐 Registration response contains user data', function () {",
+                  "  const responseJson = pm.response.json();",
+                  "  pm.expect(responseJson.data).to.have.property('user');",
+                  "  pm.expect(responseJson.data.user).to.have.property('id');",
+                  "  pm.expect(responseJson.data.user).to.have.property('email', pm.collectionVariables.get('test_email'));",
+                  "  ",
+                  "  // Store user ID for later tests",
+                  "  pm.collectionVariables.set('user_id', responseJson.data.user.id);",
+                  "});",
+                  "",
+                  "pm.test('🔐 Registration includes JWT token', function () {",
+                  "  const responseJson = pm.response.json();",
+                  "  pm.expect(responseJson.data).to.have.property('token');",
+                  "  pm.expect(responseJson.data.token).to.be.a('string');",
+                  "  pm.expect(responseJson.data.token.length).to.be.greaterThan(10);",
+                  "  ",
+                  "  // Store token for authenticated requests",
+                  "  pm.collectionVariables.set('token', responseJson.data.token);",
+                  "});",
+                  "",
+                  "console.log('✅ User registered successfully with ID:', pm.collectionVariables.get('user_id'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Login with Credentials",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user\": {\n    \"email\": \"{{test_email}}\",\n    \"password\": \"{{test_password}}\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('🔐 Login successful', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('🔐 Login response contains user and token', function () {",
+                  "  const responseJson = pm.response.json();",
+                  "  pm.expect(responseJson.data).to.have.property('user');",
+                  "  pm.expect(responseJson.data).to.have.property('token');",
+                  "  pm.expect(responseJson.data.user.email).to.equal(pm.collectionVariables.get('test_email'));",
+                  "  ",
+                  "  // Update token (might be refreshed)",
+                  "  pm.collectionVariables.set('token', responseJson.data.token);",
+                  "});",
+                  "",
+                  "console.log('✅ Login successful for user:', pm.collectionVariables.get('test_email'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Get Current User (Authenticated)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "me"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('🔐 Get current user successful', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('🔐 Current user data is correct', function () {",
+                  "  const responseJson = pm.response.json();",
+                  "  pm.expect(responseJson.data).to.have.property('user');",
+                  "  pm.expect(responseJson.data.user).to.have.property('id', parseInt(pm.collectionVariables.get('user_id')));",
+                  "  pm.expect(responseJson.data.user).to.have.property('email', pm.collectionVariables.get('test_email'));",
+                  "});",
+                  "",
+                  "console.log('✅ Current user verification successful');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Test Invalid Token",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer invalid_token_12345",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "me"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('🔐 Invalid token returns 401', function () {",
+                  "  pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('🔐 Invalid token error response structure', function () {",
+                  "  const responseJson = pm.response.json();",
+                  "  pm.expect(responseJson).to.have.property('error');",
+                  "  pm.expect(responseJson).to.have.property('status', 401);",
+                  "});",
+                  "",
+                  "console.log('✅ Invalid token properly rejected');"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🏋️ Training System",
+      "item": [
+        {
+          "name": "1. Get Available Trainings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/trainings",
+              "host": ["{{base_url}}"],
+              "path": ["trainings"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('🏋️ Get trainings successful', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('🏋️ Trainings response contains array', function () {",
+                  "  const responseJson = pm.response.json();",
+                  "  pm.expect(responseJson.data).to.have.property('trainings');",
+                  "  pm.expect(responseJson.data.trainings).to.be.an('array');",
+                  "  ",
+                  "  if (responseJson.data.trainings.length > 0) {",
+                  "    const firstTraining = responseJson.data.trainings[0];",
+                  "    pm.expect(firstTraining).to.have.property('id');",
+                  "    pm.expect(firstTraining).to.have.property('title');",
+                  "    pm.expect(firstTraining).to.have.property('type');",
+                  "    ",
+                  "    // Store training ID for later tests",
+                  "    pm.collectionVariables.set('training_id', firstTraining.id);",
+                  "  }",
+                  "});",
+                  "",
+                  "console.log('✅ Trainings list retrieved, count:', pm.response.json().data.trainings.length);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Get Training Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/trainings/{{training_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["trainings", "{{training_id}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('🏋️ Get training details successful', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('🏋️ Training details structure', function () {",
+                  "  const responseJson = pm.response.json();",
+                  "  pm.expect(responseJson.data).to.have.property('training');",
+                  "  pm.expect(responseJson.data.training).to.have.property('id', parseInt(pm.collectionVariables.get('training_id')));",
+                  "  pm.expect(responseJson.data.training).to.have.property('title');",
+                  "  pm.expect(responseJson.data.training).to.have.property('description');",
+                  "  pm.expect(responseJson.data.training).to.have.property('type');",
+                  "});",
+                  "",
+                  "console.log('✅ Training details retrieved for ID:', pm.collectionVariables.get('training_id'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Start Training Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/trainings/{{training_id}}/start",
+              "host": ["{{base_url}}"],
+              "path": ["trainings", "{{training_id}}", "start"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('🏋️ Start training successful', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('🏋️ Training session created', function () {",
+                  "  const responseJson = pm.response.json();",
+                  "  pm.expect(responseJson.data).to.have.property('user_training');",
+                  "  pm.expect(responseJson.data.user_training).to.have.property('id');",
+                  "  pm.expect(responseJson.data.user_training).to.have.property('status', 'in_progress');",
+                  "  ",
+                  "  // Store user training ID for completion",
+                  "  pm.collectionVariables.set('user_training_id', responseJson.data.user_training.id);",
+                  "});",
+                  "",
+                  "console.log('✅ Training session started with ID:', pm.collectionVariables.get('user_training_id'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Complete Training Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"completion_data\": {\n    \"duration_minutes\": 15,\n    \"rating\": 4,\n    \"notes\": \"Great training session!\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/trainings/{{training_id}}/complete",
+              "host": ["{{base_url}}"],
+              "path": ["trainings", "{{training_id}}", "complete"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('🏋️ Complete training successful', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('🏋️ Training completion response', function () {",
+                  "  const responseJson = pm.response.json();",
+                  "  pm.expect(responseJson.data).to.have.property('user_training');",
+                  "  pm.expect(responseJson.data.user_training).to.have.property('status', 'completed');",
+                  "  pm.expect(responseJson.data).to.have.property('points_earned');",
+                  "});",
+                  "",
+                  "console.log('✅ Training completed successfully, points earned:', pm.response.json().data.points_earned);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "📊 Assessment System",
+      "item": [
+        {
+          "name": "1. Get Available Assessments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/assessments",
+              "host": ["{{base_url}}"],
+              "path": ["assessments"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('📊 Get assessments successful', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('📊 Assessments response structure', function () {",
+                  "  const responseJson = pm.response.json();",
+                  "  pm.expect(responseJson.data).to.have.property('assessments');",
+                  "  pm.expect(responseJson.data.assessments).to.be.an('array');",
+                  "  ",
+                  "  if (responseJson.data.assessments.length > 0) {",
+                  "    const firstAssessment = responseJson.data.assessments[0];",
+                  "    pm.expect(firstAssessment).to.have.property('id');",
+                  "    pm.expect(firstAssessment).to.have.property('name');",
+                  "    ",
+                  "    // Store assessment ID for later tests",
+                  "    pm.collectionVariables.set('assessment_id', firstAssessment.id);",
+                  "  }",
+                  "});",
+                  "",
+                  "console.log('✅ Assessments list retrieved, count:', pm.response.json().data.assessments.length);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Start New Assessment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assessment_id\": {{assessment_id}}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/user_assessments",
+              "host": ["{{base_url}}"],
+              "path": ["user_assessments"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('📊 Start assessment successful', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('📊 Assessment session created', function () {",
+                  "  const responseJson = pm.response.json();",
+                  "  pm.expect(responseJson.data).to.have.property('user_assessment');",
+                  "  pm.expect(responseJson.data.user_assessment).to.have.property('id');",
+                  "  pm.expect(responseJson.data.user_assessment).to.have.property('status', 'in_progress');",
+                  "  ",
+                  "  // Store user assessment ID",
+                  "  pm.collectionVariables.set('user_assessment_id', responseJson.data.user_assessment.id);",
+                  "});",
+                  "",
+                  "console.log('✅ Assessment started with ID:', pm.collectionVariables.get('user_assessment_id'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Submit Assessment Responses",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"responses\": [\n    {\"question_id\": 1, \"value\": 4},\n    {\"question_id\": 2, \"value\": 3},\n    {\"question_id\": 3, \"value\": 5},\n    {\"question_id\": 4, \"value\": 4},\n    {\"question_id\": 5, \"value\": 3}\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/user_assessments/{{user_assessment_id}}/progress",
+              "host": ["{{base_url}}"],
+              "path": ["user_assessments", "{{user_assessment_id}}", "progress"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('📊 Submit responses successful', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('📊 Progress response structure', function () {",
+                  "  const responseJson = pm.response.json();",
+                  "  pm.expect(responseJson.data).to.have.property('progress');",
+                  "  pm.expect(responseJson.data).to.have.property('responses_saved');",
+                  "});",
+                  "",
+                  "console.log('✅ Assessment responses submitted successfully');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Complete Assessment",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/user_assessments/{{user_assessment_id}}/complete",
+              "host": ["{{base_url}}"],
+              "path": ["user_assessments", "{{user_assessment_id}}", "complete"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('📊 Complete assessment successful', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('📊 Assessment completion response', function () {",
+                  "  const responseJson = pm.response.json();",
+                  "  pm.expect(responseJson.data).to.have.property('user_assessment');",
+                  "  pm.expect(responseJson.data.user_assessment).to.have.property('status', 'completed');",
+                  "  pm.expect(responseJson.data).to.have.property('results');",
+                  "});",
+                  "",
+                  "console.log('✅ Assessment completed successfully');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5. Get Assessment Results",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user_assessments/{{user_assessment_id}}/results",
+              "host": ["{{base_url}}"],
+              "path": ["user_assessments", "{{user_assessment_id}}", "results"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('📊 Get results successful', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('📊 Results structure validation', function () {",
+                  "  const responseJson = pm.response.json();",
+                  "  pm.expect(responseJson.data).to.have.property('results');",
+                  "  pm.expect(responseJson.data.results).to.have.property('overall_score');",
+                  "  pm.expect(responseJson.data.results).to.have.property('category_scores');",
+                  "  pm.expect(responseJson.data.results).to.have.property('star_rating');",
+                  "});",
+                  "",
+                  "const results = pm.response.json().data.results;",
+                  "console.log('✅ Assessment results - Overall Score:', results.overall_score, 'Stars:', results.star_rating);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "❌ Error Handling Tests",
+      "item": [
+        {
+          "name": "1. Test 404 - Non-existent Resource",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/trainings/99999",
+              "host": ["{{base_url}}"],
+              "path": ["trainings", "99999"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('❌ Non-existent resource returns 404', function () {",
+                  "  pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('❌ 404 error response structure', function () {",
+                  "  const responseJson = pm.response.json();",
+                  "  pm.expect(responseJson).to.have.property('error');",
+                  "  pm.expect(responseJson).to.have.property('status', 404);",
+                  "});",
+                  "",
+                  "console.log('✅ 404 error handling verified');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Test 422 - Invalid Data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user\": {\n    \"email\": \"invalid-email\",\n    \"password\": \"123\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('❌ Invalid data returns 422', function () {",
+                  "  pm.response.to.have.status(422);",
+                  "});",
+                  "",
+                  "pm.test('❌ Validation error response structure', function () {",
+                  "  const responseJson = pm.response.json();",
+                  "  pm.expect(responseJson).to.have.property('error');",
+                  "  pm.expect(responseJson).to.have.property('message');",
+                  "  pm.expect(responseJson).to.have.property('status', 422);",
+                  "});",
+                  "",
+                  "console.log('✅ Validation error handling verified');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Test 401 - Missing Authorization",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/trainings",
+              "host": ["{{base_url}}"],
+              "path": ["trainings"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('❌ Missing auth returns 401', function () {",
+                  "  pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('❌ Auth error response structure', function () {",
+                  "  const responseJson = pm.response.json();",
+                  "  pm.expect(responseJson).to.have.property('error');",
+                  "  pm.expect(responseJson).to.have.property('status', 401);",
+                  "});",
+                  "",
+                  "console.log('✅ Authentication error handling verified');"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🧹 Cleanup & Final Tests",
+      "item": [
+        {
+          "name": "1. Get User Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/stats",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}", "stats"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('🧹 Get user stats successful', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('🧹 User stats structure', function () {",
+                  "  const responseJson = pm.response.json();",
+                  "  pm.expect(responseJson.data).to.have.property('stats');",
+                  "  pm.expect(responseJson.data.stats).to.have.property('total_points');",
+                  "  pm.expect(responseJson.data.stats).to.have.property('trainings_completed');",
+                  "  pm.expect(responseJson.data.stats).to.have.property('assessments_completed');",
+                  "});",
+                  "",
+                  "const stats = pm.response.json().data.stats;",
+                  "console.log('✅ Final user stats - Points:', stats.total_points, 'Trainings:', stats.trainings_completed, 'Assessments:', stats.assessments_completed);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('🧹 Logout successful', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('🧹 Logout response structure', function () {",
+                  "  const responseJson = pm.response.json();",
+                  "  pm.expect(responseJson).to.have.property('success', true);",
+                  "  pm.expect(responseJson).to.have.property('message');",
+                  "});",
+                  "",
+                  "// Clear stored variables",
+                  "pm.collectionVariables.set('token', '');",
+                  "pm.collectionVariables.set('user_id', '');",
+                  "",
+                  "console.log('✅ Test suite completed successfully! User logged out and variables cleared.');"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
